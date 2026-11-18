@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "km-promotions-hub",
+  "workers_dev": true,
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-18",
   "assets": {
