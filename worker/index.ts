@@ -9,6 +9,12 @@ interface Env {
 type Row = Record<string, any>;
 const json = (data: unknown, status=200, headers: Record<string,string>={}) => new Response(JSON.stringify(data), {status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store",...headers}});
 const fail = (message:string,status=400) => json({error:message},status);
+async function readBody(request: Request): Promise<Record<string, any>> {
+ const value: unknown = await request.json().catch(() => null);
+ if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+ return value as Record<string, any>;
+}
+
 const clean = (v:unknown,n=2000) => typeof v==="string"?v.trim().slice(0,n):"";
 const validUrl = (v:string) => { try { const u=new URL(v); return u.protocol==="https:"||u.protocol==="http:"; } catch { return false; } };
 const id = () => crypto.randomUUID();
@@ -55,7 +61,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p==="/api/auth/me"&&method==="GET"){const s=await session(request,env);return json({user:s?{email:s.email}:null});}
  if(p==="/api/auth/login"&&method==="POST"){
   if(!env.ADMIN_PASSWORD||!env.SESSION_SECRET)return fail("Administrator sign-in is not configured yet.",503);
-  const b: Record<string, any>=await request.json().catch(()=>({}));
+  const b = await readBody(request);
   const ip=request.headers.get("cf-connecting-ip")||"unknown";
   const cutoff=new Date(Date.now()-15*60*1000).toISOString();
   const attempts=await first(env.DB,"SELECT COUNT(*) AS total FROM auth_attempts WHERE ip=? AND created_at>?",ip,cutoff);
@@ -97,7 +103,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
   return Response.redirect(item.affiliate_url,302);
  }
  if(p==="/api/enquiries"&&method==="POST"){
-  const b: Record<string, any>=await request.json().catch(()=>({})), name=clean(b.name,120),email=clean(b.email,254).toLowerCase(),type=clean(b.type,80),message=clean(b.message,3000);
+  const b = await readBody(request), name=clean(b.name,120),email=clean(b.email,254).toLowerCase(),type=clean(b.type,80),message=clean(b.message,3000);
   if(name.length<2||!/^\S+@\S+\.\S+$/.test(email)||message.length<10||!type)return fail("Please provide a valid name, email, enquiry type and message.");
   const eid=id(); await env.DB.prepare("INSERT INTO enquiries(id,name,email,business,type,message,status,created_at) VALUES(?,?,?,?,?,?,?,?)").bind(eid,name,email,clean(b.business,160),type,message,"new",now()).run();
   return json({ok:true,id:eid});
@@ -106,7 +112,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
   const rows=await all(env.DB,"SELECT * FROM products ORDER BY created_at DESC LIMIT 200");return json({products:rows.map(r=>product(r,url.origin))});
  }
  if(p==="/api/admin/products"&&method==="POST"){
-  const b: Record<string, any>=await request.json(), name=clean(b.name,160),category=clean(b.category,60),description=clean(b.description,1500),affiliateUrl=clean(b.affiliateUrl,2000);
+  const b = await readBody(request), name=clean(b.name,160),category=clean(b.category,60),description=clean(b.description,1500),affiliateUrl=clean(b.affiliateUrl,2000);
   if(name.length<2||description.length<10||!category||!validUrl(affiliateUrl))return fail("Enter a product name, category, description and valid destination URL.");
   let media:any[]=[];try{media=Array.isArray(b.media)?await mediaUpload(env,b.media):[];}catch(e){return fail((e as Error).message,400);}
   const pid=id(),t=now();await env.DB.prepare("INSERT INTO products(id,name,category,description,price,currency,affiliate_url,published,clicks,media_json,image_path,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(pid,name,category,description,clean(b.price,40),clean(b.currency,8)||"NGN",affiliateUrl,b.published?1:0,0,JSON.stringify(media),media[0]?.path||"",t,t).run();
@@ -115,7 +121,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  const productMatch=p.match(/^\/api\/admin\/products\/([^/]+)$/);
  if(productMatch&&method==="PUT"){
   const pid=decodeURIComponent(productMatch[1]), old=await first(env.DB,"SELECT * FROM products WHERE id=?",pid);if(!old)return fail("Product not found.",404);
-  const b: Record<string, any>=await request.json(), vals:any={};
+  const b = await readBody(request), vals:any={};
   for(const [k,col,max] of [["name","name",160],["category","category",60],["description","description",1500],["price","price",40],["currency","currency",8]] as any)if(b[k]!==undefined)vals[col]=clean(b[k],max);
   if(b.affiliateUrl!==undefined){if(!validUrl(clean(b.affiliateUrl,2000)))return fail("Enter a valid destination URL.");vals.affiliate_url=clean(b.affiliateUrl,2000);}
   if(b.published!==undefined)vals.published=b.published?1:0;
@@ -126,15 +132,15 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(productMatch&&method==="DELETE"){const pid=decodeURIComponent(productMatch[1]);await env.DB.prepare("DELETE FROM products WHERE id=?").bind(pid).run();return json({ok:true});}
  if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT id,name,email,business,type,message,status,created_at AS createdAt,updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC LIMIT 200")});
  const enquiryMatch=p.match(/^\/api\/admin\/enquiries\/([^/]+)$/);
- if(enquiryMatch&&method==="PUT"){const b: Record<string, any>=await request.json(),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
+ if(enquiryMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
  if(p==="/api/admin/campaigns"&&method==="GET")return json({campaigns:await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,budget,start_date AS startDate,end_date AS endDate,status,notes,created_at AS createdAt FROM campaigns ORDER BY created_at DESC LIMIT 200")});
  if(p==="/api/admin/campaigns"&&method==="POST"){
-  const b: Record<string, any>=await request.json(),name=clean(b.name,160),channel=clean(b.channel,60),dest=clean(b.destinationUrl,2000),status=clean(b.status,20)||"draft";
+  const b = await readBody(request),name=clean(b.name,160),channel=clean(b.channel,60),dest=clean(b.destinationUrl,2000),status=clean(b.status,20)||"draft";
   if(name.length<2||!channel||!validUrl(dest)||!["draft","active","paused","completed"].includes(status))return fail("Enter a campaign name, channel and valid destination URL.");
   const cid=id(),t=now();await env.DB.prepare("INSERT INTO campaigns(id,name,channel,destination_url,budget,start_date,end_date,status,notes,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(cid,name,channel,dest,clean(b.budget,80),clean(b.startDate,10),clean(b.endDate,10),status,clean(b.notes,2000),t,t).run();return json({ok:true,id:cid});
  }
  const campMatch=p.match(/^\/api\/admin\/campaigns\/([^/]+)$/);
- if(campMatch&&method==="PUT"){const b: Record<string, any>=await request.json(),status=clean(b.status,20);if(!["draft","active","paused","completed"].includes(status))return fail("Choose a valid campaign status.");await env.DB.prepare("UPDATE campaigns SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(campMatch[1])).run();return json({ok:true});}
+ if(campMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,20);if(!["draft","active","paused","completed"].includes(status))return fail("Choose a valid campaign status.");await env.DB.prepare("UPDATE campaigns SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(campMatch[1])).run();return json({ok:true});}
  if(campMatch&&method==="DELETE"){await env.DB.prepare("DELETE FROM campaigns WHERE id=?").bind(decodeURIComponent(campMatch[1])).run();return json({ok:true});}
  if(p==="/api/admin/analytics"&&method==="GET"){
   const [products,campaigns,enquiries,events]=await Promise.all([all(env.DB,"SELECT * FROM products"),all(env.DB,"SELECT * FROM campaigns"),all(env.DB,"SELECT * FROM enquiries"),all(env.DB,"SELECT * FROM click_events ORDER BY created_at DESC LIMIT 500")]);
@@ -144,7 +150,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  }
  if(p==="/api/admin/conversions"&&method==="GET")return json({conversions:await all(env.DB,"SELECT id,network,transaction_id AS transactionId,product_id AS productId,product_name AS productName,revenue,commission,currency,country,status,converted_at AS convertedAt,created_at AS createdAt FROM conversions ORDER BY created_at DESC LIMIT 200")});
  if(p==="/api/admin/conversions"&&method==="POST"){
-  const b: Record<string, any>=await request.json(),network=clean(b.network,100),tx=clean(b.transactionId,180),currency=clean(b.currency,8).toUpperCase(),revenue=Number(b.revenue),commission=Number(b.commission),status=clean(b.status,20);
+  const b = await readBody(request),network=clean(b.network,100),tx=clean(b.transactionId,180),currency=clean(b.currency,8).toUpperCase(),revenue=Number(b.revenue),commission=Number(b.commission),status=clean(b.status,20);
   if(!network||!tx||!["NGN","USD","GBP","EUR","KES","GHS","ZAR"].includes(currency)||!Number.isFinite(revenue)||revenue<0||!Number.isFinite(commission)||commission<0||commission>revenue||!["verified","pending","rejected"].includes(status))return fail("Check network, transaction ID, currency and amounts.");
   const dup=await first(env.DB,"SELECT id FROM conversions WHERE network=? AND transaction_id=?",network,tx);if(dup)return fail("This network transaction ID is already recorded.",409);
   let productName="";if(b.productId){const pr=await first(env.DB,"SELECT name FROM products WHERE id=?",clean(b.productId,120));if(!pr)return fail("Product not found.",404);productName=pr.name;}
@@ -152,12 +158,12 @@ async function handle(request:Request,env:Env):Promise<Response> {
  }
  if(p==="/api/admin/payouts"&&method==="GET")return json({payouts:await all(env.DB,"SELECT id,network,amount,currency,reference,status,created_at AS createdAt,paid_at AS paidAt FROM payouts ORDER BY created_at DESC LIMIT 200")});
  if(p==="/api/admin/payouts"&&method==="POST"){
-  const b: Record<string, any>=await request.json(),network=clean(b.network,100),currency=clean(b.currency,8).toUpperCase(),amount=Number(b.amount),status=clean(b.status,20);
+  const b = await readBody(request),network=clean(b.network,100),currency=clean(b.currency,8).toUpperCase(),amount=Number(b.amount),status=clean(b.status,20);
   if(!network||!["NGN","USD","GBP","EUR","KES","GHS","ZAR"].includes(currency)||!Number.isFinite(amount)||amount<=0||!["pending","paid"].includes(status))return fail("Enter a valid payout.");
   const pid=id(),t=now();await env.DB.prepare("INSERT INTO payouts(id,network,amount,currency,reference,status,created_at,paid_at) VALUES(?,?,?,?,?,?,?,?)").bind(pid,network,amount,currency,clean(b.reference,180),status,t,status==="paid"?t:"").run();return json({ok:true,id:pid});
  }
  const payoutMatch=p.match(/^\/api\/admin\/payouts\/([^/]+)$/);
- if(payoutMatch&&method==="PUT"){const b: Record<string, any>=await request.json(),status=clean(b.status,20);if(!["pending","paid"].includes(status))return fail("Invalid payout status.");await env.DB.prepare("UPDATE payouts SET status=?,paid_at=? WHERE id=?").bind(status,status==="paid"?now():"",decodeURIComponent(payoutMatch[1])).run();return json({ok:true});}
+ if(payoutMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,20);if(!["pending","paid"].includes(status))return fail("Invalid payout status.");await env.DB.prepare("UPDATE payouts SET status=?,paid_at=? WHERE id=?").bind(status,status==="paid"?now():"",decodeURIComponent(payoutMatch[1])).run();return json({ok:true});}
  if(p.startsWith("/api/"))return fail("Not found.",404);
  return env.ASSETS.fetch(request);
 }
