@@ -8,9 +8,10 @@ async function request<T>(path: string, method = "GET", body?: unknown): Promise
     headers: body === undefined ? { Accept: "application/json" } : { "Content-Type": "application/json", Accept: "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body)
   });
-  const data = await response.json().catch(() => ({})) as { error?: string };
-  if (!response.ok) throw new Error(data?.error || "Request failed");
-  return { data: data as T };
+  const payload: unknown = await response.json().catch((): unknown => ({}));
+  const data = payload !== null && typeof payload === "object" ? payload as { error?: unknown } : {};
+  if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Request failed");
+  return { data: payload as T };
 }
 export const api = {
   get: <T = any>(path: string) => request<T>(path),
