@@ -20,7 +20,7 @@ function App(){
  const [loginEmail,setLoginEmail]=useState(''),[loginPassword,setLoginPassword]=useState('');
  const [search,setSearch]=useState('');
  const [sort,setSort]=useState('newest');
- const [products,setProducts]=useState<Product[]>([]),[user,setUser]=useState<AuthUser|null>(null),[authReady,setAuthReady]=useState(false),[adminOpen,setAdminOpen]=useState(window.location.pathname.replace(/\\/+$/, '')==='/admin'||window.location.hash==='#admin');
+ const [products,setProducts]=useState<Product[]>([]),[user,setUser]=useState<AuthUser|null>(null),[authReady,setAuthReady]=useState(false),[adminOpen,setAdminOpen]=useState((window.location.pathname==='/admin'||window.location.pathname==='/admin/')||window.location.hash==='#admin');
  const [enquiries,setEnquiries]=useState<Enquiry[]>([]),[loadingEnquiries,setLoadingEnquiries]=useState(false),[loadingProducts,setLoadingProducts]=useState(false);
  const [campaigns,setCampaigns]=useState<Campaign[]>([]),[loadingCampaigns,setLoadingCampaigns]=useState(false),[campaignForm,setCampaignForm]=useState({name:'',channel:'Social media',destinationUrl:'',budget:'',startDate:'',endDate:'',status:'draft',notes:''}),[campaignSearch,setCampaignSearch]=useState(''),[enquirySearch,setEnquirySearch]=useState(''),[enquiryFilter,setEnquiryFilter]=useState('all');
  const [productForm,setProductForm]=useState({...blank}),[editingId,setEditingId]=useState(''),[mediaFiles,setMediaFiles]=useState<File[]>([]),[savingProduct,setSavingProduct]=useState(false);
