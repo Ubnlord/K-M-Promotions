@@ -8,7 +8,7 @@ declare module '@appdeploy/client' {
   };
   export const auth: {
     getUser(): Promise<AuthUser | null>;
-    signInWithRedirect(): Promise<void>;
+    signIn(email: string, password: string): Promise<void>;
     signOut(): Promise<void>;
   };
 }
