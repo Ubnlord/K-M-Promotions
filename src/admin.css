@@ -39,3 +39,9 @@
  .admin-view>.panel>.admin-overview,.admin-view>.panel>.admin-products,.admin-view>.panel>.enquiry-list,.admin-view>.panel>.campaign-manager,.admin-view>.panel>.analytics-dashboard,.admin-view>.panel>.finance-dashboard{width:100%}
  .admin-view>.panel>.admin-notice,.admin-view>.panel>.error-text{margin:10px 0}
 }
+
+.admin-login-form{display:flex;flex-direction:column;gap:14px;margin-top:20px;text-align:left}
+.admin-login-form label{display:flex;flex-direction:column;gap:7px;color:#b8c9bc;font-size:12px}
+.admin-login-form input{width:100%;box-sizing:border-box;background:#07110c;color:#edf7ef;border:1px solid var(--line);border-radius:9px;padding:13px}
+.admin-login-form .button{justify-content:center;width:100%;margin-top:4px}
+.login-card{max-width:440px;margin:32px auto}
