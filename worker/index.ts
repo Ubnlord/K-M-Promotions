@@ -112,7 +112,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
   vals.updated_at=now();await env.DB.prepare("UPDATE products SET "+keys.map(k=>k+"=?").join(",")+" WHERE id=?").bind(...keys.map(k=>vals[k]),pid).run();return json({ok:true});
  }
  if(productMatch&&method==="DELETE"){const pid=decodeURIComponent(productMatch[1]);await env.DB.prepare("DELETE FROM products WHERE id=?").bind(pid).run();return json({ok:true});}
- if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT * FROM enquiries ORDER BY created_at DESC LIMIT 200")});
+ if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT id,name,email,business,type,message,status,created_at AS createdAt,updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC LIMIT 200")});
  const enquiryMatch=p.match(/^\/api\/admin\/enquiries\/([^/]+)$/);
  if(enquiryMatch&&method==="PUT"){const b=await request.json(),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
  if(p==="/api/admin/campaigns"&&method==="GET")return json({campaigns:await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,budget,start_date AS startDate,end_date AS endDate,status,notes,created_at AS createdAt FROM campaigns ORDER BY created_at DESC LIMIT 200")});
