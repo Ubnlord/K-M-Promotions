@@ -4,7 +4,6 @@ import type { AuthUser } from '@appdeploy/client';
 import { ArrowRight, BadgePercent, BarChart3, CheckCircle2, ExternalLink, Globe2, Handshake, Mail, Megaphone, Menu, Package, ShieldCheck, ShoppingBag, Sparkles, Tag, Trash2, Edit3, X, Eye, EyeOff, CircleDollarSign } from 'lucide-react';
 import './admin.css';
 import AdminAnalytics from './AdminAnalytics';
-import AdminFinance from './AdminFinance';
 
 type Media = { path: string; type: string; url?: string; name?: string };
 type Product = { id:string; name:string; category:string; description:string; price:string; currency:string; imageUrl?:string; media?:Media[]; affiliateUrl:string; published:boolean; clicks:number };
