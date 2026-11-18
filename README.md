@@ -27,3 +27,16 @@ Install dependencies with npm, then run `npm run dev`. The AppDeploy SDK integra
 ## Admin access
 
 The current AppDeploy allowlist is `munachimsokenneth@gmail.com`. Preserve this administrator identity when implementing the replacement authentication flow. Never commit passwords, API tokens or secrets.
+
+
+## Cloudflare deployment setup
+
+The deployment workflow runs on pushes to `main`. Before it can publish, add these GitHub repository Actions secrets under Settings → Secrets and variables → Actions:
+- `CLOUDFLARE_API_TOKEN` — token with Workers Scripts, D1 and account access required for deployment.
+- `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account ID.
+
+After the first Worker deployment, add Worker secrets in Cloudflare:
+- `ADMIN_PASSWORD` — a strong, unique administrator password.
+- `SESSION_SECRET` — a long random secret (at least 32 random bytes).
+
+The administrator email is configured as `munachimsokenneth@gmail.com`. Do not share the password or secrets in chat or commit them to GitHub.
