@@ -8,7 +8,7 @@ async function request<T>(path: string, method = "GET", body?: unknown): Promise
     headers: body === undefined ? { Accept: "application/json" } : { "Content-Type": "application/json", Accept: "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body)
   });
-  const data: { error?: string } = await response.json().catch(() => ({}));
+  const data = await response.json().catch(() => ({})) as { error?: string };
   if (!response.ok) throw new Error(data?.error || "Request failed");
   return { data: data as T };
 }
