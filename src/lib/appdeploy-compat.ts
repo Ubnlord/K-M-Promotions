@@ -23,13 +23,8 @@ export const auth = {
     try { const result = await request<{ user: AuthUser | null }>("/api/auth/me"); return result.data.user; }
     catch { return null; }
   },
-  signInWithRedirect: async (): Promise<void> => {
-    const email = window.prompt("Administrator email");
-    if (!email) return;
-    const password = window.prompt("Administrator password");
-    if (!password) return;
+  signIn: async (email: string, password: string): Promise<void> => {
     await request("/api/auth/login", "POST", { email, password });
-    window.location.reload();
   },
   signOut: async (): Promise<void> => {
     await request("/api/auth/logout", "POST", {});
