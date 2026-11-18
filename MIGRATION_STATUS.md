@@ -8,6 +8,8 @@
 - Added a frontend compatibility client and replaced the old redirect-based sign-in placeholder with an email/password admin login form.
 - Added a Cloudflare Worker configuration and a GitHub Actions workflow that deploys from `main`.
 - Added admin layout improvements: desktop left-side navigation, sticky admin header and mobile bottom navigation.
+- Added an in-dashboard email/password sign-in form, signed HttpOnly session cookies, constant-time password comparison, IP-based failed-login throttling and automatic admin data loading after sign-in.
+- Added a repeatable D1 migration file and verified that the live D1 database contains the expected tables, including login-attempt tracking.
 
 ## Cloudflare resources and outstanding setup
 
