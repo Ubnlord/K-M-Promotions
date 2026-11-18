@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Affiliate finance ledger and payout management",
+    "sanity": true,
+    "viewport": "mobile",
+    "covers": [
+      "conversion records",
+      "commission ledger",
+      "payout tracking",
+      "country reporting",
+      "admin authorization"
+    ],
+    "description": "K-M admin records partner-supplied conversions and payouts.",
+    "steps": [
+      "Open Finance",
+      "Record an affiliate conversion",
+      "Record a payout",
+      "Refresh the dashboard"
+    ],
+    "expected": "Finance records persist and show only partner-supplied data."
+  }
+]
