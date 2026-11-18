@@ -34,6 +34,7 @@ function App(){
  const updateCampaign=async(c:Campaign,status:string)=>{try{await api.put('/api/admin/campaigns/'+c.id,{status});setCampaigns(current=>current.map(item=>item.id===c.id?{...item,status}:item));}catch{setAuthError('Could not update campaign status.');}};
  const deleteCampaign=async(c:Campaign)=>{if(!window.confirm('Delete campaign '+c.name+'?'))return;try{await api.delete('/api/admin/campaigns/'+c.id);setCampaigns(current=>current.filter(item=>item.id!==c.id));setNotice('Campaign deleted.');}catch{setAuthError('Could not delete campaign.');}};
  useEffect(()=>{let live=true;auth.getUser().then(u=>{if(live)setUser(u);}).catch(()=>{}).finally(()=>{if(live)setAuthReady(true);});loadProducts();return()=>{live=false;};},[]);
+ useEffect(()=>{if(user){loadProducts(true);loadEnquiries();loadCampaigns();}},[user]);
  const signIn=async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();setAuthError('');try{await auth.signIn(loginEmail,loginPassword);window.location.reload();}catch{setAuthError('Sign-in failed. Check your administrator email and password.');}};
  const signOut=async()=>{await auth.signOut();setUser(null);setAdminOpen(false);setActive('home');window.location.hash='#home';};
  const saveProduct=async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();setSavingProduct(true);setNotice('');try{
