@@ -82,3 +82,6 @@ CREATE TABLE IF NOT EXISTS payouts (
   created_at TEXT NOT NULL,
   paid_at TEXT NOT NULL DEFAULT ''
 );
+
+CREATE TABLE IF NOT EXISTS auth_attempts (id TEXT PRIMARY KEY, ip TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_auth_attempts_ip_created ON auth_attempts(ip,created_at);
