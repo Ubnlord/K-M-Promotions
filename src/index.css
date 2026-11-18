@@ -198,3 +198,6 @@ button {
 .hero-actions {
   display: flex;
   gap: 13px;
+  align-items: center;
+  flex-wrap: wrap;
+}
