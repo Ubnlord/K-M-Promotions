@@ -17,5 +17,11 @@
       "database_name": "km-promotions-db",
       "database_id": "163cc83e-5889-4246-8f60-9991fd741c25"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "km-promotions-media"
+    }
   ]
 }
