@@ -371,6 +371,3 @@ section { scroll-margin-top: 24px; }
 }
 
 
-/* Discreet administrator entry in the public footer */
-.footer-admin-link{color:rgba(255,255,255,.62);font-size:.78rem;text-decoration:none;border-left:1px solid rgba(255,255,255,.2);padding-left:14px;transition:color .2s ease}
-.footer-admin-link:hover,.footer-admin-link:focus-visible{color:#b8f36b;text-decoration:underline}
