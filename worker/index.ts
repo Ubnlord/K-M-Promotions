@@ -54,8 +54,17 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p==="/api/_healthcheck")return json({ok:true,service:"K-M Promotions & Affiliate Hub",database:"connected"});
  if(p==="/api/auth/me"&&method==="GET"){const s=await session(request,env);return json({user:s?{email:s.email}:null});}
  if(p==="/api/auth/login"&&method==="POST"){
+  if(!env.ADMIN_PASSWORD||!env.SESSION_SECRET)return fail("Administrator sign-in is not configured yet.",503);
   const b=await request.json().catch(()=>({}));
-  if(clean(b.email,254).toLowerCase()!==env.ADMIN_EMAIL.toLowerCase()||!env.ADMIN_PASSWORD||clean(b.password,500)!==env.ADMIN_PASSWORD)return fail("Invalid administrator email or password.",401);
+  const ip=request.headers.get("cf-connecting-ip")||"unknown";
+  const cutoff=new Date(Date.now()-15*60*1000).toISOString();
+  const attempts=await first(env.DB,"SELECT COUNT(*) AS total FROM auth_attempts WHERE ip=? AND created_at>?",ip,cutoff);
+  if(Number(attempts?.total||0)>=8)return fail("Too many sign-in attempts. Try again in 15 minutes.",429);
+  await env.DB.prepare("INSERT INTO auth_attempts(id,ip,created_at) VALUES(?,?,?)").bind(id(),ip,now()).run();
+  const supplied=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(clean(b.password,500))));
+  const expected=new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(env.ADMIN_PASSWORD)));
+  let mismatch=0; for(let i=0;i<supplied.length;i++) mismatch|=supplied[i]^expected[i];
+  if(clean(b.email,254).toLowerCase()!==env.ADMIN_EMAIL.toLowerCase()||mismatch!==0)return fail("Invalid administrator email or password.",401);
   const payload=b64(new TextEncoder().encode(JSON.stringify({email:env.ADMIN_EMAIL,exp:Date.now()+8*60*60*1000})));
   const token=payload+"."+await sign(payload,env.SESSION_SECRET);
   return json({ok:true,user:{email:env.ADMIN_EMAIL}},200,{"set-cookie":cookie(token,8*60*60)});
