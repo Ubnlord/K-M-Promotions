@@ -1,13 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
-  build: {
-    outDir: process.env.APPDEPLOY_VITE_OUT_DIR || 'dist',
-    sourcemap:
-      process.env.APPDEPLOY_VITE_SOURCEMAP === 'hidden' ? 'hidden' : false,
-    target: ['chrome87', 'edge88', 'firefox78', 'safari14'],
+  resolve: {
+    alias: {
+      '@appdeploy/client': fileURLToPath(new URL('./src/lib/appdeploy-compat.ts', import.meta.url))
+    }
   },
+  base: '/',
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    target: ['chrome87', 'edge88', 'firefox78', 'safari14']
+  }
 });
