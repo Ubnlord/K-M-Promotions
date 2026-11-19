@@ -113,6 +113,12 @@ async function handle(request:Request,env:Env):Promise<Response> {
   else await env.DB.prepare("INSERT INTO newsletter_subscribers(id,email,status,consent_text,created_at) VALUES(?,?,?,?,?)").bind(id(),email,"subscribed","User opted in via K-M website",now()).run();
   return json({ok:true,message:"Subscription confirmed."});
  }
+ if(p==="/api/newsletter/unsubscribe"&&method==="POST"){
+  const b=await readBody(request),email=clean(b.email,254).toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email))return fail("Enter the email address you subscribed with.");
+  const r=await env.DB.prepare("UPDATE newsletter_subscribers SET status='unsubscribed',unsubscribed_at=? WHERE email=?").bind(now(),email).run();
+  return r.meta.changes?json({ok:true,message:"You have been unsubscribed."}):fail("No subscription was found for that email.",404);
+ }
  if(p==="/api/reviews"&&method==="POST"){
   const b=await readBody(request),productId=clean(b.productId,120),name=clean(b.name,100),rating=Number(b.rating),review=clean(b.review,1200);
   const item=await first(env.DB,"SELECT id FROM products WHERE id=? AND published=1",productId);
@@ -161,6 +167,9 @@ async function handle(request:Request,env:Env):Promise<Response> {
  const reviewMatch=p.match(/^\/api\/admin\/reviews\/([^/]+)$/);
  if(reviewMatch&&method==="PUT"){const b=await readBody(request),status=clean(b.status,20);if(!["pending","approved","rejected"].includes(status))return fail("Choose a valid review status.");const r=await env.DB.prepare("UPDATE product_reviews SET status=? WHERE id=?").bind(status,decodeURIComponent(reviewMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Review not found.",404);}
  if(p==="/api/admin/newsletter"&&method==="GET")return json({subscribers:await all(env.DB,"SELECT id,email,status,created_at AS createdAt FROM newsletter_subscribers ORDER BY created_at DESC LIMIT 1000")});
+ const subscriberMatch=p.match(/^\/api\/admin\/newsletter\/([^/]+)$/);
+ if(subscriberMatch&&method==="PUT"){const b=await readBody(request),status=clean(b.status,20);if(!["subscribed","unsubscribed"].includes(status))return fail("Invalid subscriber status.");const r=await env.DB.prepare("UPDATE newsletter_subscribers SET status=?,unsubscribed_at=? WHERE id=?").bind(status,status==="unsubscribed"?now():"",decodeURIComponent(subscriberMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Subscriber not found.",404);}
+
  if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT id,name,email,business,type,message,status,created_at AS createdAt,updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC LIMIT 200")});
  const enquiryMatch=p.match(/^\/api\/admin\/enquiries\/([^/]+)$/);
  if(enquiryMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
