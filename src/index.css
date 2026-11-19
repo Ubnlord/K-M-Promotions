@@ -400,3 +400,41 @@ section { scroll-margin-top: 24px; }
  .nav-link{padding:14px 13px;font-size:13px}
  .menu-toggle{width:42px;height:42px}
 }
+
+
+/* K-M growth features: offers, reviews, newsletter and content pages */
+.featured-label,.deal-label{display:inline-flex;width:max-content;margin:0 6px 10px 0;padding:6px 9px;border-radius:7px;background:rgba(199,243,107,.12);border:1px solid rgba(199,243,107,.22);color:var(--lime);font-size:9px;font-weight:800;letter-spacing:.1em}
+.deal-label{background:rgba(237,168,74,.1);border-color:rgba(237,168,74,.25);color:#f3c47b}
+.rating-summary{display:block;color:#c7f36b;font-size:11px;margin:8px 0}
+.product-price del{color:#839489;font-size:12px;font-weight:400;margin-left:7px}
+.product-detail-backdrop{position:fixed;z-index:150;inset:0;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 14px;background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
+.product-detail,.legal-modal{position:relative;width:min(760px,100%);max-height:none;margin:auto;padding:clamp(20px,4vw,38px);border:1px solid rgba(199,243,107,.2);border-radius:22px;background:#0b1910;box-shadow:0 30px 100px rgba(0,0,0,.5)}
+.product-detail h2,.legal-modal h2{font:800 clamp(26px,5vw,38px) Manrope;color:#f2fbf3;margin:14px 0}
+.product-detail>p,.legal-modal p{color:#aebeb1;font-size:13px;line-height:1.8}
+.product-detail>img,.product-detail>video{display:block;width:100%;max-height:420px;object-fit:contain;margin:12px 0;border-radius:12px;background:#050d08}
+.detail-close{position:absolute;right:15px;top:15px;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line);border-radius:11px;background:#12271a;color:#eaf4ec}
+.detail-disclosure{font-size:11px!important;color:#9aac9f!important}
+.detail-reviews{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.detail-reviews h3{font:700 20px Manrope;margin:0 0 14px}
+.detail-reviews>article,.review-admin-item{padding:14px 0;border-bottom:1px solid var(--line)}
+.detail-reviews>article strong{color:var(--lime);font-size:12px}
+.detail-reviews>article p{color:#b3c2b6;font-size:13px;line-height:1.7}
+.detail-reviews form{display:grid;gap:10px;margin-top:20px;padding:17px;border:1px solid var(--line);border-radius:14px;background:#08140d}
+.detail-reviews input,.detail-reviews select,.detail-reviews textarea,.newsletter-section input[type=email]{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;background:#06110a;color:#eff8f0}
+.detail-reviews textarea{min-height:100px}
+.detail-reviews small{color:var(--lime);font-size:12px}
+.about-section{max-width:1160px;margin:0 auto;padding:85px 34px;border-top:1px solid var(--line)}
+.about-section h2,.newsletter-section h2{font:800 clamp(32px,5vw,52px)/1.15 Manrope;letter-spacing:-1.8px;color:#f3fff5;margin:18px 0}
+.about-section h2 span,.newsletter-section h2 span{color:var(--green)}
+.about-section>p,.newsletter-section p{max-width:760px;color:#a6b6aa;font-size:14px;line-height:1.9}
+.about-values{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+.about-values article{display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--line);border-radius:14px;background:#0b1910}
+.about-values strong{font:700 14px Manrope;color:#e9f4eb}
+.about-values span{font-size:12px;line-height:1.6;color:var(--muted)}
+.newsletter-section{max-width:1160px;margin:0 auto;padding:55px 34px;display:grid;grid-template-columns:1fr .85fr;gap:40px;align-items:center;border-top:1px solid var(--line);background:linear-gradient(120deg,rgba(20,61,34,.24),transparent)}
+.newsletter-section form{display:grid;gap:12px;padding:20px;border:1px solid rgba(199,243,107,.17);border-radius:16px;background:#0b1910}
+.newsletter-section form label{display:flex;align-items:flex-start;gap:9px;color:#aab9ad;font-size:11px;line-height:1.5}
+.newsletter-section form label input{width:auto;margin-top:2px}
+.newsletter-section form small{color:var(--lime);font-size:12px}
+.footer-links{flex-wrap:wrap}
+@media(max-width:680px){.about-section{padding:60px 22px}.about-values{grid-template-columns:1fr}.newsletter-section{grid-template-columns:1fr;padding:40px 22px;gap:20px}.product-detail-backdrop{padding:10px}.product-detail,.legal-modal{border-radius:15px;padding:22px 16px}.detail-close{right:10px;top:10px}}
