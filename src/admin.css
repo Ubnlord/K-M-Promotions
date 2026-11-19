@@ -237,3 +237,29 @@
  .admin-header-logout{padding:0 8px;font-size:10px}
  .admin-heading h1{font-size:17px}
 }
+
+/* Admin topbar mirrors the public K-M website header */
+.admin-topbar{position:sticky;top:0;z-index:24;display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:76px;margin:-38px calc(-1 * clamp(16px,4vw,48px)) 28px;padding:12px clamp(16px,4vw,48px);border-bottom:1px solid rgba(199,243,107,.16);background:rgba(5,15,9,.96);backdrop-filter:blur(18px);box-shadow:0 8px 28px rgba(0,0,0,.14)}
+.admin-topbar .admin-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;min-width:0}
+.admin-topbar .brand-mark{display:grid;place-items:center;width:44px;height:44px;border:1px solid rgba(199,243,107,.42);border-radius:13px;background:linear-gradient(145deg,#173b25,#0c1d12);color:#f2ffe8;font:800 17px Manrope;letter-spacing:-1px;flex:none}
+.admin-topbar .brand-mark span{color:var(--lime)}
+.admin-topbar .brand-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.admin-topbar .brand-copy strong{color:#f3fff4;font:800 17px Manrope;letter-spacing:.02em}
+.admin-topbar .brand-copy small{color:#9db3a2;font-size:9px;font-weight:800;letter-spacing:.12em;white-space:nowrap}
+.admin-topbar-right{display:flex;align-items:center;justify-content:flex-end;gap:14px}
+.admin-workspace-label{color:#b8d69b;font-size:10px;font-weight:800;letter-spacing:.16em;white-space:nowrap}
+.admin-topbar .admin-menu-toggle.admin-menu-toggle-header{margin:0;min-height:42px}
+.admin-sidebar-utilities{margin-top:18px}
+@media(max-width:760px){
+ .admin-topbar{min-height:66px;margin:-22px -13px 20px;padding:10px 13px;gap:8px}
+ .admin-topbar .brand-mark{width:39px;height:39px;border-radius:11px;font-size:15px}
+ .admin-topbar .brand-copy strong{font-size:15px}
+ .admin-topbar .brand-copy small{font-size:7px;letter-spacing:.09em}
+ .admin-topbar-right{gap:7px}
+ .admin-workspace-label{font-size:8px;letter-spacing:.1em}
+ .admin-topbar .admin-menu-toggle.admin-menu-toggle-header{min-height:39px;padding:0 10px;font-size:10px}
+}
+@media(max-width:390px){
+ .admin-topbar .brand-copy small{font-size:6px}
+ .admin-workspace-label{display:none}
+}
