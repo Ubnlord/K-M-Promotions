@@ -43,15 +43,15 @@ function product(row:Row,origin:string) {
  try{const parsed=JSON.parse(displayPrice);if(Array.isArray(parsed)){pricingPlans=parsed;displayPrice="";}}catch{}
  return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,featured:!!row.featured,salePrice:row.sale_price||"",dealLabel:row.deal_label||"",dealEndsAt:row.deal_ends_at||"",review_count:Number(row.review_count||0),average_rating:Number(row.average_rating||0),media,imageUrl:media[0]?.url||""};
 }
-async function mediaUpload(env:Env,input:any[]) {
+async function mediaUpload(env:Env,input:any[],folder='products') {
  if(!env.MEDIA_BUCKET)throw new Error("Media storage is not enabled yet. Enable R2 and connect the MEDIA_BUCKET binding.");
  if(input.length>10)throw new Error("A product can have up to 10 photos/videos.");
  const out=[];
  for(const f of input) {
-  const type=clean(f.type,100), allowed=["image/png","image/jpeg","image/webp","video/mp4","video/webm","video/quicktime"];
+  const type=clean(f.type,100), allowed=["image/png","image/jpeg","image/webp","image/avif","image/gif","video/mp4","video/webm","video/quicktime"];
   if(!allowed.includes(type)||typeof f.data!=="string"||f.data.length>16800000)throw new Error("Unsupported media format or file too large. Use PNG/JPG/WebP or MP4/WebM/MOV up to 12 MB each.");
   const ext=({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/avif":"avif","image/gif":"gif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"} as Record<string,string>)[type];
-  const key=`products/${Date.now()}-${id()}.${ext}`;
+  const key=`${folder}/${Date.now()}-${id()}.${ext}`;
   const bytes=Uint8Array.from(atob(f.data),c=>c.charCodeAt(0));
   await env.MEDIA_BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
   out.push({path:key,type,name:clean(f.name,180),fit:f.fit==="cover"?"cover":"contain"});
@@ -88,7 +88,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p==="/api/campaigns"&&method==="GET"){
   const today=new Date().toISOString().slice(0,10);
   const rows=await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,start_date AS startDate,end_date AS endDate,notes FROM campaigns WHERE status='active' AND (start_date='' OR start_date<=?) AND (end_date='' OR end_date>=?) ORDER BY created_at DESC LIMIT 12",today,today);
-  return json({campaigns:rows});
+  return json({campaigns:rows.map((row:any)=>{let notes=row.notes||"",media:any[]=[];try{if(notes.startsWith("KM_CAMPAIGN_MEDIA:")){const packed=JSON.parse(notes.slice(18));notes=packed.notes||"";media=Array.isArray(packed.media)?packed.media.map((m:any)=>({...m,url:url.origin+"/api/media/"+m.path})):[];}}catch{}return {...row,notes,media};})});
  }
  if(p==="/api/products"&&method==="GET"){
   const rows=await all(env.DB,"SELECT p.*, (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS review_count, (SELECT AVG(rating) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS average_rating FROM products p WHERE p.published=1 ORDER BY p.featured DESC,p.created_at DESC LIMIT 200");
@@ -97,7 +97,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p.startsWith("/api/media/")&&method==="GET"){
   if(!env.MEDIA_BUCKET)return fail("Media storage is not configured.",503);
   const key=decodeURIComponent(p.slice("/api/media/".length));
-  if(!key.startsWith("products/"))return fail("Not found.",404);
+  if(!key.startsWith("products/")&&!key.startsWith("campaigns/"))return fail("Not found.",404);
   const obj=await env.MEDIA_BUCKET.get(key); if(!obj)return fail("Media not found.",404);
   return new Response(obj.body,{headers:{"content-type":obj.httpMetadata?.contentType||"application/octet-stream","cache-control":"public, max-age=31536000, immutable"}});
  }
@@ -192,11 +192,13 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT id,name,email,business,type,message,status,created_at AS createdAt,updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC LIMIT 200")});
  const enquiryMatch=p.match(/^\/api\/admin\/enquiries\/([^/]+)$/);
  if(enquiryMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
- if(p==="/api/admin/campaigns"&&method==="GET")return json({campaigns:await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,budget,start_date AS startDate,end_date AS endDate,status,notes,created_at AS createdAt FROM campaigns ORDER BY created_at DESC LIMIT 200")});
+ if(p==="/api/admin/campaigns"&&method==="GET"){const rows=await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,budget,start_date AS startDate,end_date AS endDate,status,notes,created_at AS createdAt FROM campaigns ORDER BY created_at DESC LIMIT 200");return json({campaigns:rows.map((row:any)=>{let notes=row.notes||"",media:any[]=[];try{if(notes.startsWith("KM_CAMPAIGN_MEDIA:")){const packed=JSON.parse(notes.slice(18));notes=packed.notes||"";media=Array.isArray(packed.media)?packed.media.map((m:any)=>({...m,url:url.origin+"/api/media/"+m.path})):[];}}catch{}return {...row,notes,media};})});}
  if(p==="/api/admin/campaigns"&&method==="POST"){
   const b = await readBody(request),name=clean(b.name,160),channel=clean(b.channel,60),dest=clean(b.destinationUrl,2000),status=clean(b.status,20)||"draft";
   if(name.length<2||!channel||!validUrl(dest)||!["draft","active","paused","completed"].includes(status))return fail("Enter a campaign name, channel and valid destination URL.");
-  const cid=id(),t=now();await env.DB.prepare("INSERT INTO campaigns(id,name,channel,destination_url,budget,start_date,end_date,status,notes,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(cid,name,channel,dest,clean(b.budget,80),clean(b.startDate,10),clean(b.endDate,10),status,clean(b.notes,2000),t,t).run();return json({ok:true,id:cid});
+  let media:any[]=[];try{media=Array.isArray(b.media)?await mediaUpload(env,b.media.slice(0,10),"campaigns"):[];}catch(e){return fail((e as Error).message,400);}
+  const notes=media.length?"KM_CAMPAIGN_MEDIA:"+JSON.stringify({notes:clean(b.notes,2000),media}):clean(b.notes,2000);
+  const cid=id(),t=now();await env.DB.prepare("INSERT INTO campaigns(id,name,channel,destination_url,budget,start_date,end_date,status,notes,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").bind(cid,name,channel,dest,clean(b.budget,80),clean(b.startDate,10),clean(b.endDate,10),status,notes,t,t).run();return json({ok:true,id:cid});
  }
  const campMatch=p.match(/^\/api\/admin\/campaigns\/([^/]+)$/);
  if(campMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,20);if(!["draft","active","paused","completed"].includes(status))return fail("Choose a valid campaign status.");await env.DB.prepare("UPDATE campaigns SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(campMatch[1])).run();return json({ok:true});}
