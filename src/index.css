@@ -438,3 +438,10 @@ section { scroll-margin-top: 24px; }
 .newsletter-section form small{color:var(--lime);font-size:12px}
 .footer-links{flex-wrap:wrap}
 @media(max-width:680px){.about-section{padding:60px 22px}.about-values{grid-template-columns:1fr}.newsletter-section{grid-template-columns:1fr;padding:40px 22px;gap:20px}.product-detail-backdrop{padding:10px}.product-detail,.legal-modal{border-radius:15px;padding:22px 16px}.detail-close{right:10px;top:10px}}
+
+
+/* Floating K-M WhatsApp contact */
+.whatsapp-float{position:fixed;z-index:80;right:24px;bottom:24px;display:inline-flex;align-items:center;gap:10px;padding:13px 18px;border:1px solid rgba(199,243,107,.28);border-radius:999px;background:#176b3a;color:#fff;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 12px 34px rgba(0,0,0,.35);transition:transform .2s ease,background .2s ease}
+.whatsapp-float:hover{transform:translateY(-3px);background:#198448}
+.whatsapp-float svg{flex:none}
+@media(max-width:640px){.whatsapp-float{right:16px;bottom:16px;padding:13px 16px;font-size:12px}}
