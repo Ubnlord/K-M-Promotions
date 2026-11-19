@@ -597,3 +597,27 @@ section { scroll-margin-top: 24px; }
 .public-campaign-card p{font-size:13px;line-height:1.65;color:#b8c9bc;margin:0}
 .public-campaign-card small{font-size:11px;color:#91a699}
 .public-campaign-card .button{margin-top:auto;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+
+
+/* Product description expand/collapse */
+.offer-card .product-description {
+  margin: 0 0 4px;
+  color: #aebeb1;
+  font-size: 13px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.description-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--lime);
+  font: 700 12px Manrope,sans-serif;
+  cursor: pointer;
+}
+.description-toggle:hover { color: #e5ffad; text-decoration: underline; }
+.description-toggle span { font-size: 15px; line-height: 1; }
