@@ -621,3 +621,7 @@ section { scroll-margin-top: 24px; }
 }
 .description-toggle:hover { color: #e5ffad; text-decoration: underline; }
 .description-toggle span { font-size: 15px; line-height: 1; }
+
+
+/* Featured campaign long-description toggle */
+.public-campaign-card .campaign-description p{margin:10px 0 4px;line-height:1.7;overflow-wrap:anywhere}.campaign-description-toggle{display:inline-flex;align-items:center;gap:7px;margin:3px 0 12px;padding:5px 0;border:0;background:transparent;color:var(--accent,#b8ed69);font:inherit;font-size:13px;font-weight:750;cursor:pointer}.campaign-description-toggle:hover{text-decoration:underline}.campaign-description-toggle:focus-visible{outline:2px solid currentColor;outline-offset:4px;border-radius:3px}
