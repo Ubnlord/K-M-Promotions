@@ -40,7 +40,7 @@ function product(row:Row,origin:string) {
  const media=JSON.parse(row.media_json||"[]").map((m:Row)=>({...m,url:`${origin}/api/media/${encodeURIComponent(m.path)}`}));
  let pricingPlans:any[]=[];let displayPrice=row.price||"";
  try{const parsed=JSON.parse(displayPrice);if(Array.isArray(parsed)){pricingPlans=parsed;displayPrice="";}}catch{}
- return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,media,imageUrl:media[0]?.url||""};
+ return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,featured:!!row.featured,salePrice:row.sale_price||"",dealLabel:row.deal_label||"",dealEndsAt:row.deal_ends_at||"",media,imageUrl:media[0]?.url||""};
 }
 async function mediaUpload(env:Env,input:any[]) {
  if(!env.MEDIA_BUCKET)throw new Error("Media storage is not enabled yet. Enable R2 and connect the MEDIA_BUCKET binding.");
@@ -85,7 +85,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  const user=adminPath?await requireAdmin(request,env):null;
  if(adminPath&&!user)return fail("Administrator sign-in required.",401);
  if(p==="/api/products"&&method==="GET"){
-  const rows=await all(env.DB,"SELECT * FROM products WHERE published=1 ORDER BY created_at DESC LIMIT 200");
+  const rows=await all(env.DB,"SELECT p.*, (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS review_count, (SELECT AVG(rating) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS average_rating FROM products p WHERE p.published=1 ORDER BY p.featured DESC,p.created_at DESC LIMIT 200");
   return json({products:rows.map(r=>product(r,url.origin))});
  }
  if(p.startsWith("/api/media/")&&method==="GET"){
@@ -104,6 +104,28 @@ async function handle(request:Request,env:Env):Promise<Response> {
   ]);
   return Response.redirect(item.affiliate_url,302);
  }
+ if(p==="/api/newsletter"&&method==="POST"){
+  const b=await readBody(request),email=clean(b.email,254).toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email)||b.consent!==true)return fail("Enter a valid email and confirm newsletter consent.");
+  const existing=await first(env.DB,"SELECT id,status FROM newsletter_subscribers WHERE email=?",email);
+  if(existing?.status==="subscribed")return json({ok:true,message:"You are already subscribed."});
+  if(existing){await env.DB.prepare("UPDATE newsletter_subscribers SET status='subscribed',consent_text=?,created_at=?,unsubscribed_at='' WHERE id=?").bind("User opted in via K-M website",now(),existing.id).run();}
+  else await env.DB.prepare("INSERT INTO newsletter_subscribers(id,email,status,consent_text,created_at) VALUES(?,?,?,?,?)").bind(id(),email,"subscribed","User opted in via K-M website",now()).run();
+  return json({ok:true,message:"Subscription confirmed."});
+ }
+ if(p==="/api/reviews"&&method==="POST"){
+  const b=await readBody(request),productId=clean(b.productId,120),name=clean(b.name,100),rating=Number(b.rating),review=clean(b.review,1200);
+  const item=await first(env.DB,"SELECT id FROM products WHERE id=? AND published=1",productId);
+  if(!item)return fail("Product not found.",404);
+  if(name.length<2||!Number.isInteger(rating)||rating<1||rating>5||review.length<8)return fail("Enter your name, a 1–5 star rating and a review of at least 8 characters.");
+  await env.DB.prepare("INSERT INTO product_reviews(id,product_id,reviewer_name,rating,review_text,status,created_at) VALUES(?,?,?,?,?,'pending',?)").bind(id(),productId,name,rating,review,now()).run();
+  return json({ok:true,message:"Thank you. Your review will appear after moderation."});
+ }
+ const reviewList=p.match(/^\/api\/reviews\/([^/]+)$/);
+ if(reviewList&&method==="GET"){
+  const pid=decodeURIComponent(reviewList[1]),reviews=await all(env.DB,"SELECT id,reviewer_name AS name,rating,review_text AS review,created_at AS createdAt FROM product_reviews WHERE product_id=? AND status='approved' ORDER BY created_at DESC LIMIT 50",pid);
+  return json({reviews});
+ }
  if(p==="/api/enquiries"&&method==="POST"){
   const b = await readBody(request), name=clean(b.name,120),email=clean(b.email,254).toLowerCase(),type=clean(b.type,80),message=clean(b.message,3000);
   if(name.length<2||!/^\S+@\S+\.\S+$/.test(email)||message.length<10||!type)return fail("Please provide a valid name, email, enquiry type and message.");
@@ -118,14 +140,15 @@ async function handle(request:Request,env:Env):Promise<Response> {
   if(name.length<2||description.length<10||!category||!validUrl(affiliateUrl))return fail("Enter a product name, category, description and valid destination URL.");
   let media:any[]=[];try{media=Array.isArray(b.media)?await mediaUpload(env,b.media):[];}catch(e){return fail((e as Error).message,400);}
   const planJson=Array.isArray(b.pricingPlans)?JSON.stringify(b.pricingPlans.slice(0,4).map((p:any)=>({name:clean(p.name,60),price:clean(p.price,30),period:["month","year","one-time"].includes(p.period)?p.period:"month"}))):"";
-  const pid=id(),t=now();await env.DB.prepare("INSERT INTO products(id,name,category,description,price,currency,affiliate_url,published,clicks,media_json,image_path,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(pid,name,category,description,planJson||clean(b.price,2000),clean(b.currency,8)||"NGN",affiliateUrl,b.published?1:0,0,JSON.stringify(media),media[0]?.path||"",t,t).run();
+  const pid=id(),t=now();await env.DB.prepare("INSERT INTO products(id,name,category,description,price,currency,affiliate_url,published,clicks,media_json,image_path,created_at,updated_at,featured,sale_price,deal_label,deal_ends_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(pid,name,category,description,planJson||clean(b.price,2000),clean(b.currency,8)||"NGN",affiliateUrl,b.published?1:0,0,JSON.stringify(media),media[0]?.path||"",t,t,b.featured?1:0,clean(b.salePrice,100),clean(b.dealLabel,80),clean(b.dealEndsAt,30)).run();
   return json({ok:true,id:pid});
  }
  const productMatch=p.match(/^\/api\/admin\/products\/([^/]+)$/);
  if(productMatch&&method==="PUT"){
   const pid=decodeURIComponent(productMatch[1]), old=await first(env.DB,"SELECT * FROM products WHERE id=?",pid);if(!old)return fail("Product not found.",404);
   const b = await readBody(request), vals:any={};
-  for(const [k,col,max] of [["name","name",160],["category","category",60],["description","description",1500],["price","price",2000],["currency","currency",8]] as any)if(b[k]!==undefined)vals[col]=clean(b[k],max);
+  for(const [k,col,max] of [["name","name",160],["category","category",60],["description","description",1500],["price","price",2000],["currency","currency",8],["salePrice","sale_price",100],["dealLabel","deal_label",80],["dealEndsAt","deal_ends_at",30]] as any)if(b[k]!==undefined)vals[col]=clean(b[k],max);
+  if(b.featured!==undefined)vals.featured=b.featured?1:0;
   if(Array.isArray(b.pricingPlans)){vals.price=JSON.stringify(b.pricingPlans.slice(0,4).map((p:any)=>({name:clean(p.name,60),price:clean(p.price,30),period:["month","year","one-time"].includes(p.period)?p.period:"month"})));}
   if(b.affiliateUrl!==undefined){if(!validUrl(clean(b.affiliateUrl,2000)))return fail("Enter a valid destination URL.");vals.affiliate_url=clean(b.affiliateUrl,2000);}
   if(b.published!==undefined)vals.published=b.published?1:0;
@@ -134,6 +157,10 @@ async function handle(request:Request,env:Env):Promise<Response> {
   vals.updated_at=now();await env.DB.prepare("UPDATE products SET "+keys.map(k=>k+"=?").join(",")+" WHERE id=?").bind(...keys.map(k=>vals[k]),pid).run();return json({ok:true});
  }
  if(productMatch&&method==="DELETE"){const pid=decodeURIComponent(productMatch[1]);await env.DB.prepare("DELETE FROM products WHERE id=?").bind(pid).run();return json({ok:true});}
+ if(p==="/api/admin/reviews"&&method==="GET")return json({reviews:await all(env.DB,"SELECT r.id,r.product_id AS productId,p.name AS productName,r.reviewer_name AS name,r.rating,r.review_text AS review,r.status,r.created_at AS createdAt FROM product_reviews r JOIN products p ON p.id=r.product_id ORDER BY r.created_at DESC LIMIT 300")});
+ const reviewMatch=p.match(/^\/api\/admin\/reviews\/([^/]+)$/);
+ if(reviewMatch&&method==="PUT"){const b=await readBody(request),status=clean(b.status,20);if(!["pending","approved","rejected"].includes(status))return fail("Choose a valid review status.");const r=await env.DB.prepare("UPDATE product_reviews SET status=? WHERE id=?").bind(status,decodeURIComponent(reviewMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Review not found.",404);}
+ if(p==="/api/admin/newsletter"&&method==="GET")return json({subscribers:await all(env.DB,"SELECT id,email,status,created_at AS createdAt FROM newsletter_subscribers ORDER BY created_at DESC LIMIT 1000")});
  if(p==="/api/admin/enquiries"&&method==="GET")return json({enquiries:await all(env.DB,"SELECT id,name,email,business,type,message,status,created_at AS createdAt,updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC LIMIT 200")});
  const enquiryMatch=p.match(/^\/api\/admin\/enquiries\/([^/]+)$/);
  if(enquiryMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,30);if(!["new","in_progress","contacted","closed"].includes(status))return fail("Choose a valid enquiry status.");const r=await env.DB.prepare("UPDATE enquiries SET status=?,updated_at=? WHERE id=?").bind(status,now(),decodeURIComponent(enquiryMatch[1])).run();return r.meta.changes?json({ok:true}):fail("Enquiry not found.",404);}
