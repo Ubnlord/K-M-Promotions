@@ -50,11 +50,11 @@ async function mediaUpload(env:Env,input:any[]) {
  for(const f of input) {
   const type=clean(f.type,100), allowed=["image/png","image/jpeg","image/webp","video/mp4","video/webm","video/quicktime"];
   if(!allowed.includes(type)||typeof f.data!=="string"||f.data.length>16800000)throw new Error("Unsupported media format or file too large. Use PNG/JPG/WebP or MP4/WebM/MOV up to 12 MB each.");
-  const ext=({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"} as Record<string,string>)[type];
+  const ext=({"image/png":"png","image/jpeg":"jpg","image/webp":"webp","image/avif":"avif","image/gif":"gif","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"} as Record<string,string>)[type];
   const key=`products/${Date.now()}-${id()}.${ext}`;
   const bytes=Uint8Array.from(atob(f.data),c=>c.charCodeAt(0));
   await env.MEDIA_BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
-  out.push({path:key,type,name:clean(f.name,180)});
+  out.push({path:key,type,name:clean(f.name,180),fit:"contain"});
  }
  return out;
 }
@@ -177,7 +177,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
   if(Array.isArray(b.pricingPlans)){vals.price=JSON.stringify(b.pricingPlans.slice(0,4).map((p:any)=>({name:clean(p.name,60),price:clean(p.price,30),period:["month","year","one-time"].includes(p.period)?p.period:"month"})));}
   if(b.affiliateUrl!==undefined){if(!validUrl(clean(b.affiliateUrl,2000)))return fail("Enter a valid destination URL.");vals.affiliate_url=clean(b.affiliateUrl,2000);}
   if(b.published!==undefined)vals.published=b.published?1:0;
-  if(Array.isArray(b.media)){try{vals.media_json=JSON.stringify(await mediaUpload(env,b.media));vals.image_path=JSON.parse(vals.media_json)[0]?.path||"";}catch(e){return fail((e as Error).message);}}
+  if(Array.isArray(b.media)){try{vals.media_json=JSON.stringify(await mediaUpload(env,b.media));vals.image_path=JSON.parse(vals.media_json)[0]?.path||"";}catch(e){return fail((e as Error).message);}}else if(b.mediaFit==="contain"||b.mediaFit==="cover"){const existing=JSON.parse(old.media_json||"[]");vals.media_json=JSON.stringify(existing.map((m:any)=>({...m,fit:b.mediaFit})));}
   const keys=Object.keys(vals);if(!keys.length)return fail("No product changes supplied.");
   vals.updated_at=now();await env.DB.prepare("UPDATE products SET "+keys.map(k=>k+"=?").join(",")+" WHERE id=?").bind(...keys.map(k=>vals[k]),pid).run();return json({ok:true});
  }
