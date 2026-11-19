@@ -263,3 +263,25 @@
  .admin-topbar .brand-copy small{font-size:6px}
  .admin-workspace-label{display:none}
 }
+
+
+/* Admin header alignment: brand left, menu control anchored to the far right */
+.admin-view{padding-top:38px}
+.admin-topbar{width:calc(100% + 2 * clamp(16px,4vw,48px));box-sizing:border-box}
+.admin-topbar .admin-brand{flex:0 1 auto}
+.admin-topbar-right{margin-left:auto;flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.admin-topbar .admin-menu-toggle.admin-menu-toggle-header{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;width:auto;min-width:116px;min-height:44px;margin:0;padding:0 14px;border:1px solid rgba(199,243,107,.38);border-radius:11px;background:linear-gradient(135deg,#183b25,#102619);color:#eaffdf;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 7px 20px rgba(0,0,0,.18)}
+.admin-topbar .admin-menu-toggle-header svg{flex:none}
+@media(max-width:760px){
+ .admin-view{padding-top:22px}
+ .admin-topbar{width:calc(100% + 26px);min-height:68px;margin:-22px -13px 20px;padding:10px 13px}
+ .admin-topbar-right{gap:6px}
+ .admin-topbar .admin-menu-toggle.admin-menu-toggle-header{min-width:42px;width:42px;height:42px;min-height:42px;padding:0;border-radius:11px}
+ .admin-topbar .admin-menu-toggle-header span{display:none}
+}
+@media(max-width:390px){
+ .admin-topbar{gap:6px}
+ .admin-topbar .brand-copy small{font-size:6px;letter-spacing:.55px}
+ .admin-workspace-label{display:none}
+ .admin-topbar .admin-menu-toggle.admin-menu-toggle-header{min-width:40px;width:40px;height:40px;min-height:40px}
+}
