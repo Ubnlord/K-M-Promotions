@@ -85,6 +85,11 @@ async function handle(request:Request,env:Env):Promise<Response> {
  const adminPath=p.startsWith("/api/admin/");
  const user=adminPath?await requireAdmin(request,env):null;
  if(adminPath&&!user)return fail("Administrator sign-in required.",401);
+ if(p==="/api/campaigns"&&method==="GET"){
+  const today=new Date().toISOString().slice(0,10);
+  const rows=await all(env.DB,"SELECT id,name,channel,destination_url AS destinationUrl,start_date AS startDate,end_date AS endDate,notes FROM campaigns WHERE status='active' AND (start_date='' OR start_date<=?) AND (end_date='' OR end_date>=?) ORDER BY created_at DESC LIMIT 12",today,today);
+  return json({campaigns:rows});
+ }
  if(p==="/api/products"&&method==="GET"){
   const rows=await all(env.DB,"SELECT p.*, (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS review_count, (SELECT AVG(rating) FROM product_reviews r WHERE r.product_id=p.id AND r.status='approved') AS average_rating FROM products p WHERE p.published=1 ORDER BY p.featured DESC,p.created_at DESC LIMIT 200");
   return json({products:rows.map(r=>product(r,url.origin))});
