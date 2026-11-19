@@ -473,3 +473,13 @@ section { scroll-margin-top: 24px; }
 .topbar .brand-mark span{color:#f1f7ed}
 @media(max-width:640px){.topbar .header-actions{gap:8px}.topbar .header-cta{min-height:38px;padding:0 12px;font-size:10px}.topbar .menu-toggle{width:40px;height:40px}}
 @media(max-width:380px){.topbar .header-cta{font-size:0;gap:0;width:38px;padding:0}.topbar .header-cta svg{width:17px;height:17px}}
+
+
+/* K-M logo consistency: same badge, typography and spacing on site and admin */
+.topbar .brand,.footer .brand,.admin-topbar .brand{display:inline-flex;align-items:center;gap:12px;min-width:0}
+.topbar .brand-mark,.footer .brand-mark,.admin-topbar .brand-mark{display:grid;place-items:center;width:44px;height:44px;flex:0 0 44px;border:1px solid rgba(199,243,107,.38);border-radius:13px;background:linear-gradient(145deg,rgba(199,243,107,.14),rgba(25,65,37,.5));color:#c7f36b;font:800 20px Manrope,sans-serif;letter-spacing:-1.5px;line-height:1;box-shadow:0 5px 18px rgba(125,201,87,.12)}
+.topbar .brand-mark span,.footer .brand-mark span,.admin-topbar .brand-mark span{color:#f1f7ed}
+.topbar .brand-copy,.footer .brand-copy,.admin-topbar .brand-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.topbar .brand-copy strong,.footer .brand-copy strong,.admin-topbar .brand-copy strong{font:800 14px Manrope,sans-serif;letter-spacing:2px;color:#f3fff5;line-height:1.15}
+.topbar .brand-copy small,.footer .brand-copy small,.admin-topbar .brand-copy small{font-size:8px;font-weight:700;letter-spacing:1.15px;color:#9db3a2;white-space:nowrap;line-height:1.2}
+@media(max-width:420px){.topbar .brand-mark,.footer .brand-mark,.admin-topbar .brand-mark{width:39px;height:39px;flex-basis:39px;font-size:18px}.topbar .brand-copy small,.footer .brand-copy small,.admin-topbar .brand-copy small{font-size:6.5px;letter-spacing:.8px}}
