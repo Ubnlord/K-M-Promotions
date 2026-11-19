@@ -8,9 +8,13 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": [
+      "/api/*"
+    ]
   },
-  "vars": { "ADMIN_EMAIL": "munachimsokenneth@gmail.com" },
+  "vars": {
+    "ADMIN_EMAIL": "munachimsokenneth@gmail.com"
+  },
   "d1_databases": [
     {
       "binding": "DB",
@@ -23,5 +27,8 @@
       "binding": "MEDIA_BUCKET",
       "bucket_name": "km-promotions-media"
     }
-  ]
+  ],
+  "ai": {
+    "binding": "AI"
+  }
 }
