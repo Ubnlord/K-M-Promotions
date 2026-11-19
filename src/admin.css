@@ -285,3 +285,8 @@
  .admin-workspace-label{display:none}
  .admin-topbar .admin-menu-toggle.admin-menu-toggle-header{min-width:40px;width:40px;height:40px;min-height:40px}
 }
+
+
+/* Prevent the admin logo grid from stacking K, dot and M vertically. */
+.admin-topbar .brand-mark{display:flex!important;align-items:center;justify-content:center;gap:0;white-space:nowrap;line-height:1}
+.admin-topbar .brand-mark span{display:inline;line-height:1}
