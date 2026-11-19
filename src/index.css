@@ -488,3 +488,36 @@ section { scroll-margin-top: 24px; }
 /* Keep the K·M logo letters on one horizontal line in every website header. */
 .topbar .brand-mark,.footer .brand-mark,.admin-topbar .brand-mark{display:flex!important;align-items:center;justify-content:center;gap:0;white-space:nowrap;line-height:1}
 .topbar .brand-mark span,.footer .brand-mark span,.admin-topbar .brand-mark span{display:inline;color:#f1f7ed;line-height:1}
+
+/* Header WhatsApp action */
+.header-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 13px;border:1px solid rgba(37,211,102,.38);border-radius:999px;background:rgba(37,211,102,.09);color:#b9f7ce;text-decoration:none;font-size:12px;font-weight:800;white-space:nowrap;transition:background .2s ease,transform .2s ease}
+.header-whatsapp:hover{background:rgba(37,211,102,.18);transform:translateY(-1px)}
+.header-whatsapp svg{color:#35d477}
+.header-actions{align-items:center}
+@media(max-width:760px){.topbar{gap:8px}.topbar .brand{gap:8px}.topbar .brand-copy small{font-size:6px;letter-spacing:.55px}.header-actions{gap:7px}.header-whatsapp{padding:9px 10px;font-size:11px}.header-cta{display:none!important}.menu-toggle{display:inline-flex!important;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.04);color:#eff8f0}}
+/* Animated K-M AI assistant */
+.km-assistant-launcher{position:fixed;right:22px;bottom:92px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.assistant-launch-button{position:relative;display:flex;align-items:center;gap:10px;padding:12px 17px;border:1px solid rgba(199,243,107,.55);border-radius:999px;background:linear-gradient(135deg,#c7f36b,#8fdc91);color:#102016;font-weight:800;font-size:13px;box-shadow:0 12px 35px rgba(0,0,0,.32);animation:kmAssistantPulse 2.8s ease-in-out infinite}
+.assistant-orbit{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:rgba(10,35,19,.12);animation:kmAssistantSpin 8s linear infinite}
+.assistant-online-dot,.assistant-panel-head small i{width:8px;height:8px;border-radius:50%;background:#22c978;box-shadow:0 0 0 4px rgba(34,201,120,.13)}
+.assistant-notice{max-width:290px;padding:13px 15px;border:1px solid rgba(199,243,107,.35);border-radius:16px;background:#102319;color:#eff8f0;text-align:left;font-size:12px;line-height:1.5;box-shadow:0 12px 35px rgba(0,0,0,.35);animation:kmNoticeIn .35s ease both}
+.assistant-notice span{display:block;margin-top:5px;color:#c7f36b;font-weight:800}
+.assistant-panel{position:fixed;right:22px;bottom:158px;z-index:75;width:min(390px,calc(100vw - 28px));height:min(590px,calc(100dvh - 190px));display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(199,243,107,.25);border-radius:22px;background:#0b1910;box-shadow:0 24px 75px rgba(0,0,0,.55);animation:kmAssistantPanelIn .28s ease both}
+.assistant-panel-head{display:flex;align-items:center;gap:11px;padding:15px;background:linear-gradient(120deg,#173d25,#0c2114);border-bottom:1px solid rgba(199,243,107,.17)}
+.assistant-avatar{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;background:rgba(199,243,107,.14);color:#c7f36b}
+.assistant-panel-head>div:nth-child(2){display:grid;gap:4px;flex:1}.assistant-panel-head strong{font:800 14px Manrope;color:#f2fff4}.assistant-panel-head small{display:flex;align-items:center;gap:7px;color:#a8c0ad;font-size:10px}.assistant-panel-head small i{display:inline-block;width:7px;height:7px}
+.assistant-panel-head>button{width:34px;height:34px;display:grid;place-items:center;border:0;border-radius:9px;background:rgba(255,255,255,.07);color:#e8f4e9}
+.assistant-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.assistant-message{max-width:92%;padding:11px 13px;border:1px solid rgba(207,235,211,.1);border-radius:14px;background:#13251a;color:#e6f1e8;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.assistant-message.user{align-self:flex-end;background:#1b3c26;border-color:rgba(199,243,107,.22)}
+.assistant-message>span{display:block;margin-bottom:5px;color:#c7f36b;font-size:10px;font-weight:800}
+.assistant-message p{margin:0}
+.assistant-typing{display:flex;align-items:center;gap:5px}.assistant-typing i{width:5px;height:5px;border-radius:50%;background:#c7f36b;animation:kmTyping .8s ease-in-out infinite alternate}.assistant-typing i:nth-child(2){animation-delay:.2s}.assistant-typing i:nth-child(3){animation-delay:.4s}
+.assistant-form{display:flex;align-items:flex-end;gap:8px;padding:12px;border-top:1px solid rgba(207,235,211,.1);background:#0e1d13}
+.assistant-form textarea{flex:1;resize:none;min-height:44px;max-height:100px;padding:11px 12px;border:1px solid rgba(207,235,211,.17);border-radius:12px;background:#07110c;color:#eff8f0;font-size:12px;outline:none}.assistant-form textarea:focus{border-color:rgba(199,243,107,.55)}
+.assistant-form button{width:42px;height:42px;display:grid;place-items:center;border:0;border-radius:12px;background:#c7f36b;color:#102016}.assistant-form button:disabled{opacity:.45;cursor:not-allowed}
+.assistant-disclaimer{padding:0 13px 12px;background:#0e1d13;color:#819889;font-size:9px}
+@keyframes kmAssistantPulse{0%,100%{box-shadow:0 12px 35px rgba(0,0,0,.32),0 0 0 0 rgba(199,243,107,.18)}50%{box-shadow:0 12px 35px rgba(0,0,0,.32),0 0 0 9px rgba(199,243,107,0)}}
+@keyframes kmAssistantSpin{to{transform:rotate(360deg)}}@keyframes kmNoticeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kmAssistantPanelIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes kmTyping{to{opacity:.25;transform:translateY(-3px)}}
+@media(max-width:480px){.km-assistant-launcher{right:12px;bottom:88px}.assistant-panel{right:10px;bottom:150px;width:calc(100vw - 20px);height:min(590px,calc(100dvh - 170px))}.assistant-notice{max-width:260px}.whatsapp-float{bottom:18px;left:12px;right:auto}}
+@media(prefers-reduced-motion:reduce){.assistant-launch-button,.assistant-orbit,.assistant-notice,.assistant-panel,.assistant-typing i{animation:none!important}}
