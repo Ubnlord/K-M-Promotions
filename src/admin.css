@@ -120,3 +120,16 @@
 .pricing-plan-row label { display:grid; gap:6px; color:#c5d4c8; font-size:11px; }
 .pricing-plan-row input,.pricing-plan-row select { width:100%; min-width:0; padding:10px; color:#eaf3ec; background:#0b1910; border:1px solid rgba(205,235,211,.16); border-radius:9px; }
 @media(max-width:640px) { .pricing-plan-row { grid-template-columns:1fr 1fr; } .pricing-plan-row > strong { grid-column:1/-1; } }
+
+/* Affiliate programme starter templates */
+.affiliate-starter-templates{margin:0 0 20px;padding:16px;border:1px solid rgba(199,243,107,.22);border-radius:14px;background:rgba(199,243,107,.035)}
+.affiliate-starter-templates .management-title{display:block;margin:0 0 12px}
+.affiliate-starter-templates .management-title h3{margin:0 0 5px;font-size:17px}
+.affiliate-starter-templates .management-title p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+.affiliate-template-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.affiliate-template-grid article{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:13px;background:#0a1710;border:1px solid var(--line);border-radius:11px;min-width:0}
+.affiliate-template-grid article strong{font-size:13px;color:#eaf5ec}
+.affiliate-template-grid article span{font-size:11px;line-height:1.5;color:var(--muted);min-height:32px}
+.affiliate-template-grid article .button{margin-top:auto;font-size:11px;padding:8px 11px}
+.affiliate-starter-templates>.media-help{display:block;margin-top:12px;line-height:1.6}
+@media(max-width:480px){.affiliate-template-grid{grid-template-columns:1fr}.affiliate-template-grid article span{min-height:0}}
