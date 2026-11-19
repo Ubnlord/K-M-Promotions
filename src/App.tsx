@@ -12,7 +12,7 @@ type Product = { id:string; name:string; category:string; description:string; pr
 type Enquiry = { id:string; name:string; email:string; business?:string; type:string; message:string; createdAt:string; status?:string };
 type Campaign = { id:string; name:string; channel:string; destinationUrl:string; budget:string; startDate:string; endDate:string; status:string; notes:string; createdAt:string };
 const categories=['All','Technology','Digital products','Fashion','Business','Education','Lifestyle','Other'];
-const blank={name:'',category:'Technology',description:'',price:'',currency:'NGN',affiliateUrl:'',published:false};
+const blank={name:'',category:'Technology',description:'',price:'',currency:'NGN',affiliateUrl:'',published:false,featured:false};
 const symbols:Record<string,string>={NGN:'₦',USD:'$',GBP:'£',EUR:'€',CAD:'C$',AUD:'A$',INR:'₹',JPY:'¥',KES:'KSh',GHS:'GH₵',ZAR:'R'};
 const allowedTypes=['image/png','image/jpeg','image/webp','video/mp4','video/webm','video/quicktime'];
 
