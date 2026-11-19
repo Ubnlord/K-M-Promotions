@@ -40,7 +40,7 @@ function product(row:Row,origin:string) {
  const media=JSON.parse(row.media_json||"[]").map((m:Row)=>({...m,url:`${origin}/api/media/${encodeURIComponent(m.path)}`}));
  let pricingPlans:any[]=[];let displayPrice=row.price||"";
  try{const parsed=JSON.parse(displayPrice);if(Array.isArray(parsed)){pricingPlans=parsed;displayPrice="";}}catch{}
- return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,featured:!!row.featured,salePrice:row.sale_price||"",dealLabel:row.deal_label||"",dealEndsAt:row.deal_ends_at||"",media,imageUrl:media[0]?.url||""};
+ return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,featured:!!row.featured,salePrice:row.sale_price||"",dealLabel:row.deal_label||"",dealEndsAt:row.deal_ends_at||"",review_count:Number(row.review_count||0),average_rating:Number(row.average_rating||0),media,imageUrl:media[0]?.url||""};
 }
 async function mediaUpload(env:Env,input:any[]) {
  if(!env.MEDIA_BUCKET)throw new Error("Media storage is not enabled yet. Enable R2 and connect the MEDIA_BUCKET binding.");
