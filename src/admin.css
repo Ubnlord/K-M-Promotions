@@ -170,3 +170,15 @@
  .admin-view>.panel>.admin-tabs.sidebar-open{padding-top:88px}
 }
 @media(prefers-reduced-motion:reduce){.admin-products,.admin-overview,.media-library,.enquiry-list,.campaign-manager{animation:none}}
+
+
+/* Admin moderation and newsletter audience panels */
+.admin-view>.panel>.review-admin,.admin-view>.panel>.audience-admin{grid-column:2;min-width:0;padding:8px 0 24px}
+.review-admin-item{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.review-admin-item>div{min-width:0}
+.review-admin-item strong{font-size:13px;color:#e8f3ea}
+.review-admin-item p{font-size:13px;color:#b5c5b9;line-height:1.6}
+.review-admin-item small,.review-admin-item span{font-size:10px;color:var(--muted)}
+.review-admin-item select{background:#07110c;color:#e9f1eb;border:1px solid var(--line);border-radius:8px;padding:9px}
+.audience-admin>.button{margin:12px 0}
+@media(max-width:760px){.admin-view>.panel>.review-admin,.admin-view>.panel>.audience-admin{padding:10px 0 20px}.review-admin-item{flex-direction:column}.review-admin-item select{width:100%}}
