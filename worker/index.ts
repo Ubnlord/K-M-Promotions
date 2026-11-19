@@ -54,7 +54,7 @@ async function mediaUpload(env:Env,input:any[]) {
   const key=`products/${Date.now()}-${id()}.${ext}`;
   const bytes=Uint8Array.from(atob(f.data),c=>c.charCodeAt(0));
   await env.MEDIA_BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
-  out.push({path:key,type,name:clean(f.name,180),fit:"contain"});
+  out.push({path:key,type,name:clean(f.name,180),fit:f.fit==="cover"?"cover":"contain"});
  }
  return out;
 }
