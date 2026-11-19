@@ -483,3 +483,8 @@ section { scroll-margin-top: 24px; }
 .topbar .brand-copy strong,.footer .brand-copy strong,.admin-topbar .brand-copy strong{font:800 14px Manrope,sans-serif;letter-spacing:2px;color:#f3fff5;line-height:1.15}
 .topbar .brand-copy small,.footer .brand-copy small,.admin-topbar .brand-copy small{font-size:8px;font-weight:700;letter-spacing:1.15px;color:#9db3a2;white-space:nowrap;line-height:1.2}
 @media(max-width:420px){.topbar .brand-mark,.footer .brand-mark,.admin-topbar .brand-mark{width:39px;height:39px;flex-basis:39px;font-size:18px}.topbar .brand-copy small,.footer .brand-copy small,.admin-topbar .brand-copy small{font-size:6.5px;letter-spacing:.8px}}
+
+
+/* Keep the K·M logo letters on one horizontal line in every website header. */
+.topbar .brand-mark,.footer .brand-mark,.admin-topbar .brand-mark{display:flex!important;align-items:center;justify-content:center;gap:0;white-space:nowrap;line-height:1}
+.topbar .brand-mark span,.footer .brand-mark span,.admin-topbar .brand-mark span{display:inline;color:#f1f7ed;line-height:1}
