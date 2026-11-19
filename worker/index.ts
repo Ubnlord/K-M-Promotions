@@ -97,8 +97,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
  if(p.startsWith("/api/media/")&&method==="GET"){
   if(!env.MEDIA_BUCKET)return fail("Media storage is not configured.",503);
   const key=decodeURIComponent(p.slice("/api/media/".length));
-  if(!key.startsWith("products/")&&!key.startsWith("campaigns/"))return fail("Not found.",404);
-  const obj=await env.MEDIA_BUCKET.get(key); if(!obj)return fail("Media not found.",404);
+  if(!key.startsWith("products/")&&!key.startsWith("campaigns/"))return fail("Not found.",404);  const obj=await env.MEDIA_BUCKET.get(key); if(!obj)return fail("Media not found.",404);
   return new Response(obj.body,{headers:{"content-type":obj.httpMetadata?.contentType||"application/octet-stream","cache-control":"public, max-age=31536000, immutable"}});
  }
  if(p.startsWith("/api/click/")&&method==="GET"){
@@ -225,6 +224,16 @@ async function handle(request:Request,env:Env):Promise<Response> {
  }
  const payoutMatch=p.match(/^\/api\/admin\/payouts\/([^/]+)$/);
  if(payoutMatch&&method==="PUT"){const b = await readBody(request),status=clean(b.status,20);if(!["pending","paid"].includes(status))return fail("Invalid payout status.");await env.DB.prepare("UPDATE payouts SET status=?,paid_at=? WHERE id=?").bind(status,status==="paid"?now():"",decodeURIComponent(payoutMatch[1])).run();return json({ok:true});}
+ if(p==="/robots.txt"&&method==="GET"){
+  return new Response("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: "+url.origin+"/sitemap.xml\n",{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public, max-age=3600"}});
+ }
+ if(p==="/sitemap.xml"&&method==="GET"){
+  const rows=await all(env.DB,"SELECT id,updated_at FROM products WHERE published=1 ORDER BY updated_at DESC LIMIT 5000");
+  const entries=[url.origin+"/",...rows.map((r:any)=>url.origin+"/product/"+encodeURIComponent(r.id))];
+  const escapeXml=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;");
+  const urls=entries.map((loc:string,i:number)=>"<url><loc>"+escapeXml(loc)+"</loc>"+(i>0&&rows[i-1]?.updated_at?"<lastmod>"+new Date(rows[i-1].updated_at).toISOString().slice(0,10)+"</lastmod>":"")+"</url>").join("");
+  return new Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls+"</urlset>",{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public, max-age=3600"}});
+ }
  if(p.startsWith("/api/"))return fail("Not found.",404);
  return env.ASSETS.fetch(request);
 }
