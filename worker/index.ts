@@ -113,7 +113,7 @@ async function handle(request:Request,env:Env):Promise<Response> {
   const context=offers.map(x=>({name:x.name,category:x.category,description:x.description,price:x.price,currency:x.currency,url:x.affiliate_url}));
   const system="You are the K-M Promotions & Affiliate Hub website assistant. Be warm, professional, clear and detailed. Explain answers in well-structured plain language with short headings or numbered steps when useful. Help visitors understand K-M, published offers, affiliate marketing, product discovery, business promotion, sponsored placements and how to contact the team. Use only the published offer catalogue supplied below for current K-M product facts. Never invent prices, commissions, availability, partner approvals, guarantees, contact details or policies. If information is missing or uncertain, say so and direct the visitor to the website enquiry form or WhatsApp. For affiliate links, disclose that K-M may earn a commission. Do not claim to be a human. Keep responses helpful and focused. Published K-M offers: "+JSON.stringify(context);
   const messages=[{role:"system",content:system},...history,{role:"user",content:message}];
-  const result=await env.AI.run("@cf/meta/llama-3.1-8b-instruct",{messages,max_tokens:1100,temperature:0.35});
+  const result=await env.AI.run("@cf/meta/llama-3.1-8b-fast-v2",{messages,max_tokens:1100,temperature:0.35});
   const answer=clean(result?.response,7000);
   if(!answer)return fail("The assistant could not generate an answer. Please try again.",503);
   return json({ok:true,answer});
