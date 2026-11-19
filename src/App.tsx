@@ -42,7 +42,7 @@ function App(){
  const signOut=async()=>{await auth.signOut();setUser(null);setAdminOpen(true);setActive('home');window.history.replaceState({},'', '/admin');};
  const saveProduct=async(e:React.FormEvent<HTMLFormElement>)=>{e.preventDefault();setSavingProduct(true);setNotice('');try{
   const media=await Promise.all(mediaFiles.map(file=>new Promise<{name:string;type:string;data:string}>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve({name:file.name,type:file.type,data:String(reader.result).split(',')[1]??''});reader.onerror=reject;reader.readAsDataURL(file);})));
-  const payload={...productForm,...(usePricingPlans?{price:JSON.stringify(pricingPlans),currency:'USD'}:{}),...(media.length?{media}:{})};
+  const payload={...productForm,...(usePricingPlans?{price:'',currency:'USD',pricingPlans}:{}),...(media.length?{media}:{})};
   if(editingId)await api.put('/api/admin/products/'+editingId,payload);else await api.post('/api/admin/products',payload);
   setProductForm({...blank});setEditingId('');setMediaFiles([]);setUsePricingPlans(false);setPricingPlans(defaultPlans);setNotice('Product saved successfully.');await Promise.all([loadProducts(true),loadProducts()]);
  }catch{setNotice('Could not save product. Check file types, file sizes and details.');}finally{setSavingProduct(false);}};
