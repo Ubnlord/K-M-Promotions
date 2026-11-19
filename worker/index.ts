@@ -38,7 +38,9 @@ async function all(db:D1Database,sql:string,...params:any[]) { const r=await db.
 async function first(db:D1Database,sql:string,...params:any[]) { return await db.prepare(sql).bind(...params).first<Row>(); }
 function product(row:Row,origin:string) {
  const media=JSON.parse(row.media_json||"[]").map((m:Row)=>({...m,url:`${origin}/api/media/${encodeURIComponent(m.path)}`}));
- return {id:row.id,name:row.name,category:row.category,description:row.description,price:row.price,currency:row.currency,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,media,imageUrl:media[0]?.url||""};
+ let pricingPlans:any[]=[];let displayPrice=row.price||"";
+ try{const parsed=JSON.parse(displayPrice);if(Array.isArray(parsed)){pricingPlans=parsed;displayPrice="";}}catch{}
+ return {id:row.id,name:row.name,category:row.category,description:row.description,price:displayPrice,currency:row.currency,pricingPlans,affiliateUrl:row.affiliate_url,published:!!row.published,clicks:row.clicks||0,media,imageUrl:media[0]?.url||""};
 }
 async function mediaUpload(env:Env,input:any[]) {
  if(!env.MEDIA_BUCKET)throw new Error("Media storage is not enabled yet. Enable R2 and connect the MEDIA_BUCKET binding.");
@@ -115,14 +117,16 @@ async function handle(request:Request,env:Env):Promise<Response> {
   const b = await readBody(request), name=clean(b.name,160),category=clean(b.category,60),description=clean(b.description,1500),affiliateUrl=clean(b.affiliateUrl,2000);
   if(name.length<2||description.length<10||!category||!validUrl(affiliateUrl))return fail("Enter a product name, category, description and valid destination URL.");
   let media:any[]=[];try{media=Array.isArray(b.media)?await mediaUpload(env,b.media):[];}catch(e){return fail((e as Error).message,400);}
-  const pid=id(),t=now();await env.DB.prepare("INSERT INTO products(id,name,category,description,price,currency,affiliate_url,published,clicks,media_json,image_path,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(pid,name,category,description,clean(b.price,40),clean(b.currency,8)||"NGN",affiliateUrl,b.published?1:0,0,JSON.stringify(media),media[0]?.path||"",t,t).run();
+  const planJson=Array.isArray(b.pricingPlans)?JSON.stringify(b.pricingPlans.slice(0,4).map((p:any)=>({name:clean(p.name,60),price:clean(p.price,30),period:["month","year","one-time"].includes(p.period)?p.period:"month"}))):"";
+  const pid=id(),t=now();await env.DB.prepare("INSERT INTO products(id,name,category,description,price,currency,affiliate_url,published,clicks,media_json,image_path,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(pid,name,category,description,planJson||clean(b.price,2000),clean(b.currency,8)||"NGN",affiliateUrl,b.published?1:0,0,JSON.stringify(media),media[0]?.path||"",t,t).run();
   return json({ok:true,id:pid});
  }
  const productMatch=p.match(/^\/api\/admin\/products\/([^/]+)$/);
  if(productMatch&&method==="PUT"){
   const pid=decodeURIComponent(productMatch[1]), old=await first(env.DB,"SELECT * FROM products WHERE id=?",pid);if(!old)return fail("Product not found.",404);
   const b = await readBody(request), vals:any={};
-  for(const [k,col,max] of [["name","name",160],["category","category",60],["description","description",1500],["price","price",40],["currency","currency",8]] as any)if(b[k]!==undefined)vals[col]=clean(b[k],max);
+  for(const [k,col,max] of [["name","name",160],["category","category",60],["description","description",1500],["price","price",2000],["currency","currency",8]] as any)if(b[k]!==undefined)vals[col]=clean(b[k],max);
+  if(Array.isArray(b.pricingPlans)){vals.price=JSON.stringify(b.pricingPlans.slice(0,4).map((p:any)=>({name:clean(p.name,60),price:clean(p.price,30),period:["month","year","one-time"].includes(p.period)?p.period:"month"})));}
   if(b.affiliateUrl!==undefined){if(!validUrl(clean(b.affiliateUrl,2000)))return fail("Enter a valid destination URL.");vals.affiliate_url=clean(b.affiliateUrl,2000);}
   if(b.published!==undefined)vals.published=b.published?1:0;
   if(Array.isArray(b.media)){try{vals.media_json=JSON.stringify(await mediaUpload(env,b.media));vals.image_path=JSON.parse(vals.media_json)[0]?.path||"";}catch(e){return fail((e as Error).message);}}
