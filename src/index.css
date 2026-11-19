@@ -463,3 +463,13 @@ section { scroll-margin-top: 24px; }
 .newsletter-section h2{margin:14px 0 12px}
 .newsletter-section form{max-width:470px}
 @media(max-width:680px){.newsletter-section{margin:22px 14px 34px;padding:26px 20px;border-radius:17px}}
+
+
+/* K-M branded public header CTA */
+.topbar .header-actions{display:flex;align-items:center;gap:10px}
+.topbar .header-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 16px;border:1px solid rgba(199,243,107,.3);border-radius:999px;background:linear-gradient(135deg,#c7f36b,#9be7b0);color:#102016;font-size:12px;font-weight:800;box-shadow:0 7px 22px rgba(155,231,176,.12);transition:transform .18s ease,box-shadow .18s ease}
+.topbar .header-cta:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(155,231,176,.2)}
+.topbar .brand-mark{color:#c7f36b}
+.topbar .brand-mark span{color:#f1f7ed}
+@media(max-width:640px){.topbar .header-actions{gap:8px}.topbar .header-cta{min-height:38px;padding:0 12px;font-size:10px}.topbar .menu-toggle{width:40px;height:40px}}
+@media(max-width:380px){.topbar .header-cta{font-size:0;gap:0;width:38px;padding:0}.topbar .header-cta svg{width:17px;height:17px}}
