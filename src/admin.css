@@ -290,3 +290,8 @@
 /* Prevent the admin logo grid from stacking K, dot and M vertically. */
 .admin-topbar .brand-mark{display:flex!important;align-items:center;justify-content:center;gap:0;white-space:nowrap;line-height:1}
 .admin-topbar .brand-mark span{display:inline;line-height:1}
+
+
+/* Campaign photo and video uploads */
+.campaign-upload-preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin:-2px 0 12px}.campaign-upload-preview>div{min-width:0;padding:7px;border:1px solid var(--line);border-radius:10px;background:#09150e}.campaign-upload-preview img,.campaign-upload-preview video{display:block;width:100%;height:88px;object-fit:contain;background:#030a06;border-radius:7px}.campaign-upload-preview small{display:block;margin-top:5px;overflow-wrap:anywhere;color:var(--muted);font-size:10px}.campaign-admin-media,.public-campaign-media{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 13px}.campaign-admin-media img,.campaign-admin-media video,.public-campaign-media img,.public-campaign-media video{width:100%;max-height:240px;aspect-ratio:4/3;object-fit:contain;background:#050d08;border-radius:10px}.public-campaign-media{grid-template-columns:1fr;margin:0 -1px 15px}.public-campaign-media img,.public-campaign-media video{max-height:320px}.campaign-form input[type=file]{padding:10px;background:#08140d;border:1px dashed rgba(199,243,107,.32);border-radius:10px;color:#dce9de}
+@media(max-width:480px){.campaign-upload-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.campaign-admin-media,.public-campaign-media{grid-template-columns:1fr}}
